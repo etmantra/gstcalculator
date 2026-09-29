@@ -5,12 +5,21 @@ app = Flask(__name__)
 @app.route("/", methods=["GET", "POST"])
 def gst_calculator():
     result = None
+    form_data = {}  # Dictionary to remember user inputs
+    
     if request.method == "POST":
         try:
             # Retrieve form data
             amount = float(request.form.get("amount", 0))
             tax_type = request.form.get("tax_type") 
             gst_rate = float(request.form.get("gst_rate", 0))
+
+            # Store the inputs to pass back to the HTML form
+            form_data = {
+                "amount": request.form.get("amount", ""),
+                "tax_type": tax_type,
+                "gst_rate": int(gst_rate)
+            }
 
             # Calculate GST based on inclusive or exclusive selection
             if tax_type == "exclusive":
@@ -22,7 +31,7 @@ def gst_calculator():
                 total_gst = amount - base_price
                 total_price = amount
 
-            # Split into CGST and SGST (Intra-state calculation)
+            # Split into CGST and SGST
             cgst = total_gst / 2
             sgst = total_gst / 2
 
@@ -36,10 +45,9 @@ def gst_calculator():
                 "rate": int(gst_rate)
             }
         except ValueError:
-            # In case of non-numeric input, reload without crashing
             pass
 
-    return render_template("index.html", result=result)
+    return render_template("index.html", result=result, form_data=form_data)
 
 if __name__ == "__main__":
     app.run(debug=True)
